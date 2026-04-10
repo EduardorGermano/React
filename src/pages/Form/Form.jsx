@@ -1,38 +1,54 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import react, { useEffect, useState } from "react";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { getTarefas, salvarTarefas } from "../../services/tarefasServices";
 
 const Form = () => {
 
     const [texto, setTexto] = useState("");
     const navigate = useNavigate();
+    const { id } = useParams();
 
-    useEffect(()=>{
-        console.log("UEF: "+texto);
-    },[texto]);
+    useEffect(() => {
+        if (id) {
+            const lista = getTarefas()
+            const tarefa = lista.find(item => item.id == id)
+            if (tarefa) {
+                setTexto(tarefa.texto)
+            }
 
-    const alterar = (e)=>{
-        setTexto(e.target.value);
-        console.log(texto);
-    }
-
-    const salvar = () =>{
-        const todoList = {
-            id:Date.now(),
-            texto: texto,
-            status: false
         }
-        let lista = JSON.parse(localStorage.getItem("lista-tarefas")) || [];
-        lista.push(todoList);
-        localStorage.setItem("lista-tarefas", JSON.stringify(lista));
-        navigate("/");
+    }, [id])
+
+    const alterar = (e) => {
+        setTexto(e.target.value);
     }
 
-    return(
+    const salvar = () => {
+        let lista = getTarefas()
+
+        if (id) {
+            lista = lista.map(item => item.id == id ? { ...item, texto: texto } : item)
+
+        } else {
+            const toDoList = {
+                id: Date.now(),
+                texto: texto,
+                status: false
+            }
+            lista.push(toDoList)
+        }
+        salvarTarefas(lista)
+        navigate("/")
+
+
+    }
+
+    return (
         <div>
-            <input type="text" value={texto} onChange={alterar}/>
-            <input type="button" onClick={salvar} value="Salvar"/>
+            <input type="text" value={texto} onChange={alterar} />
+            <input type="button" onClick={salvar} value="Salvar" />
         </div>
     )
 }
 
-export default Form;
+export default Form
